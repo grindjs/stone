@@ -1,23 +1,14 @@
-import '../AST'
+import '../Stone'
 
 /**
  * Runs through the template code and prefixes
  * any non-local variables with the context
  * object.
  *
- * @param  {string} code Code for the template
+ * @param  {string} tree Tree to contextualize
  * @return {string}      Contextualized template code
  */
-export function contextualize(code) {
-	let tree = null
-
-	try {
-		tree = AST.parse(code)
-	} catch(err) {
-		err._code = code
-		throw err
-	}
-
+export function contextualize(tree) {
 	const scopes = [
 		{
 			locals: new Set([
@@ -41,7 +32,7 @@ export function contextualize(code) {
 		scope = pushScope(scopes, node)
 	}
 
-	AST.walk(tree, {
+	Stone.walk(tree, {
 		Statement: node => {
 			scope = checkScope(scopes, node)
 		},
@@ -124,8 +115,6 @@ export function contextualize(code) {
 			node.name = `_.${node.name}`
 		}
 	})
-
-	return AST.stringify(tree)
 }
 
 /**
@@ -137,7 +126,7 @@ export function contextualize(code) {
  * @param  {object} node  Node to add
  */
 function scopeVariable(scope, node) {
-	AST.walkVariables(node, node => {
+	Stone.walkVariables(node, node => {
 		scope.locals.add(node.name)
 	})
 }

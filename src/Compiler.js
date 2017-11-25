@@ -1,7 +1,8 @@
-import './Errors/StoneCompilerError'
-import './StoneTemplate'
+import './Stone'
+import './Support/contextualize'
 
 const fs = require('fs')
+const vm = require('vm')
 
 export class Compiler {
 
@@ -34,10 +35,12 @@ export class Compiler {
 			this.engine.view.emit('compile:start', file)
 		}
 
-		const template = new StoneTemplate(this, contents, file)
+		let template = null
 
 		try {
-			template.compile()
+			const tree = Stone.parse(contents)
+			contextualize(tree)
+			template = Stone.stringify(tree)
 		} catch(err) {
 			if(!err._hasTemplate) {
 				err._hasTemplate = true
@@ -56,46 +59,11 @@ export class Compiler {
 		}
 
 		if(!shouldEval) {
-			return template.toString()
+			return template
 		}
 
-		return template.toFunction()
+		const script = new vm.Script(`(${template})`, { filename: file })
+		return script.runInNewContext()
 	}
 
-	compileDirective(context, name, args) {
-		if(name === 'directive') {
-			// Avoid infinite loop
-			return null
-		}
-
-		if(typeof this.directives[name] === 'function') {
-			return this.directives[name](context, args)
-		}
-
-		const method = `compile${name[0].toUpperCase()}${name.substring(1)}`
-
-		if(typeof this[method] !== 'function') {
-			throw new StoneCompilerError(context, `@${name} is not a valid Stone directive.`)
-		}
-
-		return this[method](context, args)
-	}
-
-	compileEnd() {
-		return '}'
-	}
-
-}
-
-// Load in the rest of the compilers
-for(const [ name, func ] of Object.entries({
-	...require('./Compiler/Assignments'),
-	...require('./Compiler/Components'),
-	...require('./Compiler/Conditionals'),
-	...require('./Compiler/Layouts'),
-	...require('./Compiler/Loops'),
-	...require('./Compiler/Macros'),
-	...require('./Compiler/Outputs'),
-})) {
-	Compiler.prototype[name] = func
 }
