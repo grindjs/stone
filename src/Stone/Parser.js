@@ -106,21 +106,30 @@ export class Parser {
 		const node = this.startNode()
 		node.directive = directive
 
-		if(this.input.charCodeAt(this.pos) === 40) {
-			this.inDirective = true
-			this.next()
-			this.context.push(new acorn.TokContext)
-
-			const parseArgs = `${parse}Args`
-
-			if(typeof this[parseArgs] === 'function') {
-				args = this[parseArgs](node)
+		if(this._isCharCode(40)) {
+			const start = this.pos
+			this.pos++
+			this.skipSpace()
+			if(this._isCharCode(41)) {
+				this.pos++
+				this.next()
 			} else {
-				args = this.parseParenExpression()
-			}
+				this.pos = start
+				this.inDirective = true
+				this.next()
+				this.context.push(new acorn.TokContext)
 
-			this.context.pop()
-			this.inDirective = false
+				const parseArgs = `${parse}Args`
+
+				if(typeof this[parseArgs] === 'function') {
+					args = this[parseArgs](node)
+				} else {
+					args = this.parseParenExpression()
+				}
+
+				this.context.pop()
+				this.inDirective = false
+			}
 			this.pos = this.start // Fixes an issue where output after the directive is cutoff, but feels wrong.
 		} else {
 			this.next()
