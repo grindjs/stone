@@ -247,6 +247,22 @@ export class Parser {
 		return this.input.charCodeAt(this.pos + delta) === code
 	}
 
+	_flattenArgs(args) {
+		if(args.isNil) {
+			return [ ]
+		} else if(args.type === 'SequenceExpression') {
+			return args.expressions.map(expression => {
+				if(expression.type === 'AssignmentExpression') {
+					expression.type = 'AssignmentPattern'
+				}
+
+				return expression
+			})
+		}
+
+		return [ args ]
+	}
+
 	_createIdentifier(identifier) {
 		const node = new acorn.Node(this)
 		node.type = 'Identifier'

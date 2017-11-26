@@ -1,21 +1,19 @@
 export function parseMacroDirective(node, args) {
 	(this._currentMacro = (this._currentMacro || [ ])).push(node)
+	args = this._flattenArgs(args)
 
-	if(args.type === 'SequenceExpression') {
-		node.id = args.expressions.shift()
-		node.params = args.expressions.map(expression => {
-			if(expression.type === 'AssignmentExpression') {
-				expression.type = 'AssignmentPattern'
-			}
-
-			return expression
-		})
-	} else {
-		node.id = args
-		node.params = [ ]
+	if(args.length === 0) {
+		this.raise(this.start, '`@macro` must contain at least 1 argument')
 	}
 
-	node.body = this.parseUntilEndDirective('endmacro')
+	node.id = args.shift()
+
+	const output = this.startNode()
+	output.rescopeContext = true
+	output.params = args
+	output.body = this.parseUntilEndDirective('endmacro')
+
+	node.output = this.finishNode(output, 'StoneOutputBlock')
 	return this.finishNode(node, 'StoneMacro')
 }
 
