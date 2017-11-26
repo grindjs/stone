@@ -19,18 +19,15 @@ export class Parser {
 		const node = this.startNode()
 		this.nextToken()
 
-		const output = this._createDeclaration('output', this._createLiteral('\'\''), 'let')
 		const result = this.parseTopLevel(node)
 
+		const output = new acorn.Node(this)
+		output.type = 'StoneOutputBlock'
+		output.body = this._createBlockStatement(result.body)
+
 		const template = new acorn.Node(this)
-		template.type = 'FunctionDeclaration'
-		template.id = this._createIdentifier('template')
-		template.params = [ this._createIdentifier('_') ]
-		template.body = this._createBlockStatement([
-			output,
-			...result.body,
-			this._createReturn('output')
-		])
+		template.type = 'StoneTemplate'
+		template.output = output
 
 		result.body = [ template ]
 

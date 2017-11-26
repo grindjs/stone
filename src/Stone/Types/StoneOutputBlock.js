@@ -101,6 +101,7 @@ export function walk(node, st, c) {
 
 export function scope(node, scope) {
 	node.scope = new Set(scope)
+	node.scope.add('output')
 
 	if(Array.isArray(node.params)) {
 		for(const param of node.params) {

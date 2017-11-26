@@ -3,8 +3,6 @@ import './Types'
 export class Scoper {
 
 	static defaultScope = new Set([
-		'_',
-		'_sections',
 		'Object',
 		'Set',
 		'Date',

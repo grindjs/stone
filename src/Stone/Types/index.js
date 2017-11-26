@@ -6,4 +6,5 @@ export const Types = {
 	StoneOutput: require('./StoneOutput'),
 	StoneOutputBlock: require('./StoneOutputBlock'),
 	StoneOutputExpression: require('./StoneOutputExpression'),
+	StoneTemplate: require('./StoneTemplate'),
 }
