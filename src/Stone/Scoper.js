@@ -119,6 +119,10 @@ export class Scoper {
 		this._scope(node.id, scope, true)
 	}
 
+	static AssignmentPattern(node, scope, force) {
+		this._scope(node.left, scope, force)
+	}
+
 	static ArrayPattern(node, scope, force) {
 		for(const element of node.elements) {
 			this._scope(element, scope, force)

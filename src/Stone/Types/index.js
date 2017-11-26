@@ -4,4 +4,5 @@ export const Types = {
 	StoneOutput: require('./StoneOutput'),
 	StoneOutputExpression: require('./StoneOutputExpression'),
 	StoneLoop: require('./StoneLoop'),
+	StoneMacro: require('./StoneMacro'),
 }
