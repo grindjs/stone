@@ -12,6 +12,7 @@ const { tokTypes: tt } = require('acorn')
  */
 export function parseDumpDirective(node, value) {
 	node.value = value
+	this.next()
 	return this.finishNode(node, 'StoneDump')
 }
 
