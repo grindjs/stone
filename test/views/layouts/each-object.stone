@@ -1,1 +1,1 @@
-@each('control-structures._each-object-partial', pairs[0], 'value')
+@each('layouts._each-object-partial', pairs[0], 'value')

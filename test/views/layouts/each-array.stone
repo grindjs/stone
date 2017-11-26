@@ -1,1 +1,1 @@
-@each('control-structures._each-array-partial', numbers, 'value')
+@each('layouts._each-array-partial', numbers, 'value')

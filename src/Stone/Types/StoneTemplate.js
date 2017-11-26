@@ -1,4 +1,4 @@
-export function generate({ output }, state) {
+export function generate({ pathname, output }, state) {
 	output.returnRaw = true
 
 	output.id = {
@@ -23,6 +23,20 @@ export function generate({ output }, state) {
 		}
 	]
 
+	output.assignments = output.assignments || [ ]
+	output.assignments.push({
+		kind: 'const',
+		left: {
+			type: 'Identifier',
+			name: '_templatePathname'
+		},
+		right: {
+			type: 'Literal',
+			value: pathname.isNil ? null : pathname,
+			raw: pathname.isNil ? null : `'${pathname}'`
+		}
+	})
+
 	this[output.type](output, state)
 }
 
@@ -33,5 +47,6 @@ export function walk({ output }, st, c) {
 export function scope({ output }, scope) {
 	scope.add('_')
 	scope.add('_sections')
+	scope.add('_templatePathname')
 	this._scope(output, scope)
 }
