@@ -11,52 +11,60 @@ export function generate(node, state) {
 	this.SequenceExpression({ expressions: node.params || [ ] }, state)
 	state.write(' ')
 
+	node.assignments = node.assignments || [ ]
+
 	if(node.rescopeContext) {
 		// _ = { ..._ }
-		node.body.body.unshift({
-			type: 'ExpressionStatement',
-			expression: {
-				type: 'AssignmentExpression',
-				operator: '=',
-				left: {
-					type: 'Identifier',
-					name: '_'
-				},
-				right: {
-					type: 'ObjectExpression',
-					properties: [
-						{
-							type: 'SpreadElement',
-							argument: {
-								type: 'Identifier',
-								name: '_'
-							}
+		node.assignments.push({
+			operator: '=',
+			left: {
+				type: 'Identifier',
+				name: '_'
+			},
+			right: {
+				type: 'ObjectExpression',
+				properties: [
+					{
+						type: 'SpreadElement',
+						argument: {
+							type: 'Identifier',
+							name: '_'
 						}
-					]
-				}
+					}
+				]
 			}
 		})
 	}
 
 	// let output = ''
-	node.body.body.unshift({
-		type: 'VariableDeclaration',
-		declarations: [
-			{
-				type: 'VariableDeclarator',
-				id: {
-					type: 'Identifier',
-					name: 'output'
-				},
-				init: {
-					type: 'Literal',
-					value: '\'\'',
-					raw: '\'\'',
-				}
-			}
-		],
-		kind: 'let'
+	node.assignments.push({
+		kind: 'let',
+		left: {
+			type: 'Identifier',
+			name: 'output'
+		},
+		right: {
+			type: 'Literal',
+			value: '',
+			raw: '\'\'',
+		}
 	})
+
+	node.body.body.unshift(...node.assignments.map(({ kind, ...assignment }) => {
+		const hasKind = !kind.isNil
+		return {
+			type: hasKind ? 'VariableDeclaration' : 'ExpressionStatement',
+			kind: kind,
+			expression: hasKind ? void 0 : { ...assignment, type: 'AssignmentExpression' },
+			declarations: !hasKind ? void 0 : [
+				{
+					type: 'VariableDeclarator',
+					id: assignment.left,
+					init: assignment.right
+				}
+			]
+		}
+	}))
 
 	if(node.returnRaw) {
 		// return output
