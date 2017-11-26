@@ -6,6 +6,23 @@ export const Generator = {
 
 	...baseGenerator,
 
+	Program(node, state) {
+		state._scopes = [ ]
+		state.pushScope = function(scope) {
+			this._scopes.push(this.scope)
+			this.scope = scope
+		}.bind(state)
+
+		state.popScope = function() {
+			this.scope = this._scopes.pop()
+		}.bind(state)
+
+		state.pushScope(node.scope)
+		const value = baseGenerator.Program.call(this, node, state)
+		state.popScope()
+		return value
+	},
+
 	Property(node, state) {
 		if(node.type === 'SpreadElement') {
 			state.write('...(')
@@ -42,7 +59,6 @@ export const Generator = {
 }
 
 for(const key of [
-	'Program',
 	'BlockStatement',
 	'FunctionDeclaration',
 	'ForStatement',
@@ -53,10 +69,9 @@ for(const key of [
 	'ArrowFunctionExpression'
 ]) {
 	Generator[key] = function(node, state) {
-		const oldScope = state.scope
-		state.scope = node.scope
+		state.pushScope(node.scope)
 		const value = baseGenerator[key].call(this, node, state)
-		state.scope = oldScope
+		state.popScope()
 		return value
 	}
 }
