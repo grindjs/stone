@@ -13,7 +13,9 @@ export class Stone {
 			return
 		}
 
-		acorn.plugins.stone = parser => {
+		acorn.plugins.stone = (parser, config) => {
+			parser._stoneTemplate = config.template || null
+
 			for(const name of Object.getOwnPropertyNames(Parser.prototype)) {
 				if(name === 'constructor') {
 					continue
@@ -32,14 +34,16 @@ export class Stone {
 		}
 	}
 
-	static parse(code) {
+	static parse(code, pathname = null) {
 		this._register()
 
 		return acorn.parse(code, {
 			ecmaVersion: 9,
 			plugins: {
 				objectSpread: true,
-				stone: true
+				stone: {
+					template: pathname
+				}
 			}
 		})
 	}

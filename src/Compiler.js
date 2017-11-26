@@ -37,7 +37,7 @@ export class Compiler {
 		let template = null
 
 		try {
-			template = Stone.stringify(Stone.parse(contents))
+			template = Stone.stringify(Stone.parse(contents, file))
 		} catch(err) {
 			if(!err._hasTemplate) {
 				err._hasTemplate = true

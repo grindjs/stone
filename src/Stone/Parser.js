@@ -28,6 +28,7 @@ export class Parser {
 		const template = new acorn.Node(this)
 		template.type = 'StoneTemplate'
 		template.output = output
+		template.pathname = this._stoneTemplate
 
 		result.body = [ template ]
 
