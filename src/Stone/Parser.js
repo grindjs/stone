@@ -1,9 +1,12 @@
 import './Parsers'
+
+import './Contexts/DirectiveArgs'
+import './Contexts/PreserveSpace'
+
 import './Tokens/StoneOutput'
 import './Tokens/StoneDirective'
 
 const acorn = require('acorn')
-
 const tt = acorn.tokTypes
 
 const directiveCodes = new Set(
@@ -32,6 +35,21 @@ export class Parser {
 		result.body = [ template ]
 
 		return result
+	}
+
+	expect(next, type) {
+		if(type === tt.parenR && (this.curContext() instanceof DirectiveArgs)) {
+			// Awkward workaround so acorn doesn’t
+			// advance beyond the close parenthesis
+			// otherwise it tries to eat spaces
+			// and in some cases the first word
+			this.context.push(new PreserveSpace(true, true))
+			const value = next.call(this, type)
+			this.context.pop()
+			return value
+		}
+
+		return next.call(this, type)
 	}
 
 	skipSpace(next, ...args) {
@@ -101,6 +119,10 @@ export class Parser {
 			++this.pos
 		}
 
+		if(directive.length === 0) {
+			this.unexpected()
+		}
+
 		let args = null
 		const parse = `parse${directive[0].toUpperCase()}${directive.substring(1)}Directive`
 		const node = this.startNode()
@@ -117,20 +139,19 @@ export class Parser {
 				this.pos = start
 				this.inDirective = true
 				this.next()
-				this.context.push(new acorn.TokContext)
+				this.context.push(new DirectiveArgs)
 
 				const parseArgs = `${parse}Args`
 
 				if(typeof this[parseArgs] === 'function') {
 					args = this[parseArgs](node)
 				} else {
-					args = this.parseParenExpression()
+					args = this.parseDirectiveArgs()
 				}
 
 				this.context.pop()
 				this.inDirective = false
 			}
-			this.pos = this.start // Fixes an issue where output after the directive is cutoff, but feels wrong.
 		} else {
 			this.next()
 		}
@@ -142,6 +163,27 @@ export class Parser {
 		return this[parse](node, args)
 	}
 
+	parseDirectiveArgs() {
+		this.expect(tt.parenL)
+		const val = this.parseExpression()
+
+		// Awkward workaround so acorn doesn’t
+		// advance beyond the close parenthesis
+		// otherwise it tries to eat spaces
+		// and in some cases the first word
+		this.context.push(new PreserveSpace(true, true))
+		this.expect(tt.parenR)
+		this.context.pop()
+
+		return val
+	}
+
+	reset() {
+		this.context.push(new PreserveSpace(true, true))
+		this.next()
+		this.context.pop()
+	}
+
 	parseUntilEndDirective(directives) {
 		if(Array.isArray(directives)) {
 			directives = new Set(directives)
@@ -149,6 +191,7 @@ export class Parser {
 			directives = new Set([ directives ])
 		}
 
+		const node = this.startNode()
 		const statements = [ ]
 
 		contents: for(;;) {
@@ -158,7 +201,7 @@ export class Parser {
 
 					if(node.directive && directives.has(node.directive)) {
 						if(node.type !== 'Directive') {
-							this.next()
+							this.reset()
 						}
 
 						break contents
@@ -166,7 +209,7 @@ export class Parser {
 						statements.push(node)
 					}
 
-					this.next()
+					this.reset()
 					break
 				}
 
@@ -196,7 +239,8 @@ export class Parser {
 			}
 		}
 
-		return this._createBlockStatement(statements)
+		node.body = statements
+		return this.finishNode(node, 'BlockStatement')
 	}
 
 	_isCharCode(code, delta = 0) {
