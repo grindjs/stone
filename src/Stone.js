@@ -1,5 +1,6 @@
 import './Stone/Generator'
 import './Stone/Parser'
+import './Stone/Scoper'
 import './Stone/Walker'
 
 const acorn = require('acorn5-object-spread/inject')(require('acorn'))
@@ -44,6 +45,7 @@ export class Stone {
 	}
 
 	static stringify(tree) {
+		Scoper.scope(tree)
 		return astring(tree, { generator: Generator })
 	}
 

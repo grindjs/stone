@@ -1,5 +1,4 @@
 import './Stone'
-import './Support/contextualize'
 
 const fs = require('fs')
 const vm = require('vm')
@@ -38,9 +37,7 @@ export class Compiler {
 		let template = null
 
 		try {
-			const tree = Stone.parse(contents)
-			contextualize(tree)
-			template = Stone.stringify(tree)
+			template = Stone.stringify(Stone.parse(contents))
 		} catch(err) {
 			if(!err._hasTemplate) {
 				err._hasTemplate = true

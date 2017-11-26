@@ -13,3 +13,7 @@ export function generate({ safe = true, value }, state) {
 export function walk({ value }, st, c) {
 	c(value, st, 'Expression')
 }
+
+export function scope({ value }, scope) {
+	return this._scope(value, scope)
+}
