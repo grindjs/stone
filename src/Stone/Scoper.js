@@ -9,7 +9,8 @@ export class Scoper {
 		'Array',
 		'String',
 		'global',
-		'process'
+		'process',
+		'StoneSections'
 	])
 
 	static scope(node) {

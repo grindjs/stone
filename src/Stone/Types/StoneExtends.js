@@ -1,13 +1,17 @@
 export function generate(node, state) {
-	state.write('output += _.$stone.include(_, _sections, _templatePathname, ')
+	state.write('__extendsLayout = ')
 	this[node.view.type](node.view, state)
+	state.write(';')
 
-	if(!node.context.isNil) {
-		state.write(', ')
-		this[node.context.type](node.context, state)
+	if(node.context.isNil) {
+		return
 	}
 
-	state.write(');')
+	state.write(state.lineEnd)
+	state.write(state.indent)
+	state.write('__extendsContext = ')
+	this[node.context.type](node.context, state)
+	state.write(';')
 }
 
 export function walk(node, st, c) {

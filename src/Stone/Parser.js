@@ -16,19 +16,19 @@ const directiveCodes = new Set(
 export class Parser {
 
 	parse() {
+		const template = new acorn.Node(this)
+		template.type = 'StoneTemplate'
+		template.pathname = this._stoneTemplatePathname
+		this._stoneTemplate = template
+
 		const node = this.startNode()
 		this.nextToken()
 
 		const result = this.parseTopLevel(node)
 
-		const output = new acorn.Node(this)
-		output.type = 'StoneOutputBlock'
-		output.body = this._createBlockStatement(result.body)
-
-		const template = new acorn.Node(this)
-		template.type = 'StoneTemplate'
-		template.output = output
-		template.pathname = this._stoneTemplate
+		template.output = new acorn.Node(this)
+		template.output.type = 'StoneOutputBlock'
+		template.output.body = this._createBlockStatement(result.body)
 
 		result.body = [ template ]
 
@@ -122,7 +122,7 @@ export class Parser {
 		}
 
 		let args = null
-		const parse = `parse${directive[0].toUpperCase()}${directive.substring(1)}Directive`
+		const parse = `parse${directive[0].toUpperCase()}${directive.substring(1).toLowerCase()}Directive`
 		const node = this.startNode()
 		node.directive = directive
 

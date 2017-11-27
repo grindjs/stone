@@ -1,4 +1,5 @@
 import './Stone'
+import './Support/StoneSections'
 
 const fs = require('fs')
 const vm = require('vm')
@@ -59,8 +60,13 @@ export class Compiler {
 			return template
 		}
 
-		const script = new vm.Script(`(${template})`, { filename: file })
-		return script.runInNewContext()
+		try {
+			const script = new vm.Script(`(${template})`, { filename: file })
+			return script.runInNewContext({ StoneSections })
+		} catch(err) {
+			console.log('template', template)
+			throw err
+		}
 	}
 
 }

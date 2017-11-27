@@ -66,34 +66,37 @@ export function generate(node, state) {
 		}
 	}))
 
-	if(node.returnRaw) {
+	let _return = null
+
+	if(!node.return.isNil) {
+		_return = node.return
+	} else if(node.returnRaw) {
 		// return output
-		node.body.body.push({
-			type: 'ReturnStatement',
-			argument: {
-				type: 'Identifier',
-				name: 'output'
-			}
-		})
+		_return = {
+			type: 'Identifier',
+			name: 'output'
+		}
 	} else {
 		// return new HtmlString(output)
-		node.body.body.push({
-			type: 'ReturnStatement',
-			argument: {
-				type: 'NewExpression',
-				callee: {
+		_return = {
+			type: 'NewExpression',
+			callee: {
+				type: 'Identifier',
+				name: 'HtmlString'
+			},
+			arguments: [
+				{
 					type: 'Identifier',
-					name: 'HtmlString'
-				},
-				arguments: [
-					{
-						type: 'Identifier',
-						name: 'output'
-					}
-				]
-			}
-		})
+					name: 'output'
+				}
+			]
+		}
 	}
+
+	node.body.body.push({
+		type: 'ReturnStatement',
+		argument: _return
+	})
 
 	this[node.body.type](node.body, state)
 	state.popScope()

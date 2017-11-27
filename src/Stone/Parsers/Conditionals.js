@@ -1,4 +1,4 @@
-const endDirectives = [ 'endif', 'elseif', 'else' ]
+export const endDirectives = [ 'endif', 'elseif', 'else' ]
 
 export function parseIfDirective(node, args) {
 	(this._currentIf = (this._currentIf || [ ])).push(node)

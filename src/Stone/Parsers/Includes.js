@@ -6,11 +6,12 @@
  * @return {object}      Finished node
  */
 export function parseIncludeDirective(node, args) {
+	args = this._flattenArgs(args)
+
 	if(args.length === 0) {
 		this.raise(this.start, '`@include` must contain at least 1 argument')
 	}
 
-	args = this._flattenArgs(args)
 	node.view = args.shift()
 
 	if(args.length > 1) {

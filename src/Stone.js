@@ -14,7 +14,7 @@ export class Stone {
 		}
 
 		acorn.plugins.stone = (parser, config) => {
-			parser._stoneTemplate = config.template || null
+			parser._stoneTemplatePathname = config.template || null
 
 			for(const name of Object.getOwnPropertyNames(Parser.prototype)) {
 				if(name === 'constructor') {

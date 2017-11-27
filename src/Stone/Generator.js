@@ -25,9 +25,16 @@ export const Generator = {
 
 	Property(node, state) {
 		if(node.type === 'SpreadElement') {
-			state.write('...(')
-			this[node.argument.type](node.argument, state)
-			state.write(')')
+			if(node.argument.type === 'Identifier') {
+				state.write('...')
+				this.Identifier(node.argument, state)
+				state.write('')
+			} else {
+				state.write('...(')
+				this[node.argument.type](node.argument, state)
+				state.write(')')
+			}
+
 			return
 		}
 
