@@ -1,4 +1,5 @@
 export const Parsers = {
+	...require('./Components'),
 	...require('./Conditionals'),
 	...require('./Includes'),
 	...require('./Layouts'),

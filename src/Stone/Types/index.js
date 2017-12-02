@@ -1,4 +1,5 @@
 export const Types = {
+	StoneComponent: require('./StoneComponent'),
 	StoneDump: require('./StoneDump'),
 	StoneEach: require('./StoneEach'),
 	StoneEmptyExpression: require('./StoneEmptyExpression'),
@@ -11,6 +12,7 @@ export const Types = {
 	StoneOutputBlock: require('./StoneOutputBlock'),
 	StoneOutputExpression: require('./StoneOutputExpression'),
 	StoneSection: require('./StoneSection'),
+	StoneSlot: require('./StoneSlot'),
 	StoneSuper: require('./StoneSuper'),
 	StoneTemplate: require('./StoneTemplate'),
 	StoneYield: require('./StoneYield'),
