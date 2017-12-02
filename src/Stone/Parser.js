@@ -3,6 +3,8 @@ import './Parsers'
 import './Contexts/DirectiveArgs'
 import './Contexts/PreserveSpace'
 
+import './Support/MakeNode'
+
 import './Tokens/StoneOutput'
 import './Tokens/StoneDirective'
 
@@ -20,6 +22,7 @@ export class Parser {
 		template.type = 'StoneTemplate'
 		template.pathname = this._stoneTemplatePathname
 		this._stoneTemplate = template
+		this.make = new MakeNode(this)
 
 		const node = this.startNode()
 		this.nextToken()
@@ -28,7 +31,7 @@ export class Parser {
 
 		template.output = new acorn.Node(this)
 		template.output.type = 'StoneOutputBlock'
-		template.output.body = this._createBlockStatement(result.body)
+		template.output.body = this.make.block(result.body)
 
 		result.body = [ template ]
 
@@ -48,10 +51,6 @@ export class Parser {
 		}
 
 		return next.call(this, type)
-	}
-
-	skipSpace(next, ...args) {
-		return next.call(this, ...args)
 	}
 
 	readToken(next, code) {
@@ -92,7 +91,7 @@ export class Parser {
 			// we can leverage the built in acorn functionality
 			// for parsing things like for loops without it
 			// trying to parse the block
-			return this._createBlockStatement([ ])
+			return this.make.block([ ])
 		}
 
 		switch(this.type) {
@@ -259,72 +258,6 @@ export class Parser {
 		}
 
 		return [ args ]
-	}
-
-	_createIdentifier(identifier) {
-		const node = new acorn.Node(this)
-		node.type = 'Identifier'
-		node.name = identifier
-		return node
-	}
-
-	_maybeCreateIdentifier(name) {
-		if(typeof name !== 'string') {
-			return name
-		}
-
-		return this._createIdentifier(name)
-	}
-
-	_createBlockStatement(statements) {
-		const node = new acorn.Node(this)
-		node.type = 'BlockStatement'
-		node.body = statements
-		return node
-	}
-
-	_createEmptyNode() {
-		const node = new acorn.Node(this)
-		node.type = 'BlankExpression'
-		return node
-	}
-
-	_createAssignment(left, right, operator = '=') {
-		const node = this.startNodeAt(this.start, this.startLoc)
-		node.operator = operator
-		node.left = this._maybeCreateIdentifier(left)
-		node.right = right
-
-		return this.finishNode(node, 'AssignmentExpression')
-	}
-
-	_createDeclaration(lhs, rhs, kind = 'const') {
-		const declarator = this.startNode()
-		declarator.id = this._maybeCreateIdentifier(lhs)
-		declarator.init = rhs
-		this.finishNode(declarator, 'VariableDeclarator')
-
-		const declaration = this.startNode()
-		declaration.declarations = [ declarator ]
-		declaration.kind = kind
-		return this.finishNode(declaration, 'VariableDeclaration')
-	}
-
-	_createLiteral(value) {
-		const node = this.startNode()
-		node.value = value
-		node.raw = value
-		return this.finishNode(node, 'Literal')
-	}
-
-	_createReturn(value) {
-		const declarator = this.startNode()
-
-		if(value) {
-			declarator.argument = this._maybeCreateIdentifier(value)
-		}
-
-		return this.finishNode(declarator, 'ReturnStatement')
 	}
 
 	_debug(message = 'DEBUG', peek = false) {
