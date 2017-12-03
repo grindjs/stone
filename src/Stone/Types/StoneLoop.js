@@ -6,7 +6,6 @@ export function generate({ loop }, state) {
 	state.__loops = (state.__loops || 0) + 1
 	const loopVariable = `__loop${state.__loops}`
 	loop.scope.add(loopVariable)
-	loop.body.scope.add(loopVariable)
 	loop.body.scope.add('loop')
 
 	state.write(`const ${loopVariable} = new _.StoneLoop(`)

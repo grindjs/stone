@@ -1,8 +1,9 @@
 import './Types'
+import './Support/Scope'
 
 export class Scoper {
 
-	static defaultScope = new Set([
+	static defaultScope = new Scope(null, [
 		'Object',
 		'Set',
 		'Date',
@@ -28,7 +29,7 @@ export class Scoper {
 	// Handlers
 
 	static _bodyStatement(node, declarations, scope) {
-		node.scope = new Set(scope)
+		node.scope = scope.branch()
 
 		if(!declarations.isNil) {
 			this._scope(declarations, node.scope)
@@ -38,7 +39,7 @@ export class Scoper {
 	}
 
 	static BlockStatement(node, scope) {
-		node.scope = new Set(scope)
+		node.scope = scope.branch()
 
 		for(const statement of node.body) {
 			this._scope(statement, node.scope)
@@ -48,7 +49,7 @@ export class Scoper {
 	static Program = Scoper.BlockStatement
 
 	static FunctionDeclaration(node, scope) {
-		node.scope = new Set(scope)
+		node.scope = scope.branch()
 
 		if(Array.isArray(node.params)) {
 			for(const param of node.params) {

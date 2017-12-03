@@ -48,9 +48,10 @@ export function walk(node, st, c) {
 }
 
 export function scope(node, scope) {
-	node.scope = new Set(scope)
-	node.scope.add('__componentView')
-	node.scope.add('__componentContext')
+	node.scope = scope.branch([
+		'__componentView',
+		'__componentContext'
+	])
 
 	this._scope(node.output, node.scope)
 }
