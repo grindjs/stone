@@ -13,6 +13,8 @@ export class StoneUnset extends StoneDirectiveType {
 	 */
 	static parse(parser, node, args) {
 		node.properties = parser._flattenArgs(args)
+		this.assertArgs(parser, args, 1)
+
 		parser.next()
 		return parser.finishNode(node, 'StoneUnset')
 	}

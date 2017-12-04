@@ -5,14 +5,13 @@ export class StoneMacro extends StoneDirectiveType {
 	static directive = 'macro'
 
 	static parse(parser, node, args) {
-		(parser._currentMacro = (parser._currentMacro || [ ])).push(node)
 		args = parser._flattenArgs(args)
-
-		if(args.length === 0) {
-			parser.raise(parser.start, '`@macro` must contain at least 1 argument')
-		}
+		this.assertArgs(parser, args, 1)
 
 		node.id = args.shift()
+
+		parser._currentMacro = parser._currentMacro || [ ]
+		parser._currentMacro.push(node)
 
 		const output = parser.startNode()
 		output.rescopeContext = true

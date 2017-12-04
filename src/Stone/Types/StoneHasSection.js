@@ -11,12 +11,10 @@ export class StoneHasSection extends StoneDirectiveType {
 
 	static parse(parser, node, args) {
 		args = parser._flattenArgs(args)
+		this.assertArgs(parser, args, 1, 1)
 
-		if(args.length !== 1) {
-			parser.raise(parser.start, '`@hassection` must contain exactly 1 argument')
-		}
-
-		(parser._currentIf = (parser._currentIf || [ ])).push(node)
+		parser._currentIf = parser._currentIf || [ ]
+		parser._currentIf.push(node)
 
 		node.section = args.pop()
 		node.consequent = parser.parseUntilEndDirective(endDirectives)

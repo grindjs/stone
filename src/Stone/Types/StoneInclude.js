@@ -13,16 +13,11 @@ export class StoneInclude extends StoneDirectiveType {
 	 */
 	static parse(parser, node, args) {
 		args = parser._flattenArgs(args)
-
-		if(args.length === 0) {
-			parser.raise(parser.start, '`@include` must contain at least 1 argument')
-		}
+		this.assertArgs(parser, args, 1, 2)
 
 		node.view = args.shift()
 
-		if(args.length > 1) {
-			parser.raise(parser.start, '`@include` cannot contain more than 2 arguments')
-		} else if(args.length === 1) {
+		if(args.length > 0) {
 			node.context = args.shift()
 		}
 

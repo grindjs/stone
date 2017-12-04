@@ -38,11 +38,7 @@ export class StoneSet extends StoneDirectiveType {
 		const kind = args.kind || null
 		args = parser._flattenArgs(args)
 
-		if(args.length === 0) {
-			parser.raise(parser.start, '`@set` must contain at least 1 argument')
-		} else if(args.length > 2) {
-			parser.raise(parser.start, '`@set` cannot contain more than 2 arguments')
-		}
+		this.assertArgs(parser, args, 1, 2)
 
 		if(args.length === 1 && args[0].type === 'AssignmentExpression') {
 			Object.assign(node, args[0])

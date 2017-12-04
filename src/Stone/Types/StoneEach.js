@@ -14,12 +14,7 @@ export class StoneEach extends StoneDirectiveType {
 	 */
 	static parse(parser, node, params) {
 		node.params = parser._flattenArgs(params)
-
-		if(node.params.length < 3) {
-			parser.raise(parser.start, '`@each` must contain at least 3 arguments')
-		} else if(node.params.length > 5) {
-			parser.raise(parser.start, '`@each` cannot contain more than 5 arguments')
-		}
+		this.assertArgs(parser, node.params, 3, 5)
 
 		parser.next()
 		return parser.finishNode(node, 'StoneEach')
