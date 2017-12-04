@@ -83,6 +83,6 @@ for(const key of [
 	}
 }
 
-for(const key of Object.keys(Types)) {
-	Generator[key] = Types[key].generate.bind(Generator)
+for(const type of Object.values(Types)) {
+	type.registerGenerate(Generator)
 }

@@ -293,24 +293,5 @@ for(const [ name, func ] of Object.entries(Parsers)) {
 
 // Inject parsers for each type
 for(const type of Object.values(Types)) {
-	if(!type.parsers.isNil) {
-		for(const [ name, func ] of Object.entries(type.parsers)) {
-			Parser.prototype[name] = func
-		}
-	}
-
-	if(type.directive.isNil || typeof type.parse !== 'function') {
-		continue
-	}
-
-	const directive = type.directive[0].toUpperCase() + type.directive.substring(1)
-	Parser.prototype[`parse${directive}Directive`] = type.parse
-
-	if(typeof type.parseArgs === 'function') {
-		Parser.prototype[`parse${directive}DirectiveArgs`] = type.parseArgs
-	}
-
-	if(type.hasEndDirective && typeof type.parseEnd === 'function') {
-		Parser.prototype[`parseEnd${type.directive}Directive`] = type.parseEnd
-	}
+	type.registerParse(Parser.prototype)
 }

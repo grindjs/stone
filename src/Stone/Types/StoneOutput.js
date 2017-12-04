@@ -1,13 +1,19 @@
-export function generate({ output }, state) {
-	state.write('output += ')
-	this[output.type](output, state)
-	state.write(';')
-}
+import './StoneType'
 
-export function walk({ output }, st, c) {
-	c(output, st, 'Expression')
-}
+export class StoneOutput extends StoneType {
 
-export function scope({ output }, scope) {
-	return this._scope(output, scope)
+	static generate(generator, { output }, state) {
+		state.write('output += ')
+		generator[output.type](output, state)
+		state.write(';')
+	}
+
+	static walk(walker, { output }, st, c) {
+		c(output, st, 'Expression')
+	}
+
+	static scope(scoper, { output }, scope) {
+		return scoper._scope(output, scope)
+	}
+
 }

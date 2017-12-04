@@ -1,47 +1,52 @@
-export const directive = 'macro'
-export const hasEndDirective = true
+import './StoneDirectiveType'
 
-export function parse(node, args) {
-	(this._currentMacro = (this._currentMacro || [ ])).push(node)
-	args = this._flattenArgs(args)
+export class StoneMacro extends StoneDirectiveType {
 
-	if(args.length === 0) {
-		this.raise(this.start, '`@macro` must contain at least 1 argument')
+	static directive = 'macro'
+
+	static parse(parser, node, args) {
+		(parser._currentMacro = (parser._currentMacro || [ ])).push(node)
+		args = parser._flattenArgs(args)
+
+		if(args.length === 0) {
+			parser.raise(parser.start, '`@macro` must contain at least 1 argument')
+		}
+
+		node.id = args.shift()
+
+		const output = parser.startNode()
+		output.rescopeContext = true
+		output.params = args
+		output.body = parser.parseUntilEndDirective('endmacro')
+
+		node.output = parser.finishNode(output, 'StoneOutputBlock')
+		return parser.finishNode(node, 'StoneMacro')
 	}
 
-	node.id = args.shift()
+	static parseEnd(parser, node) {
+		if(!parser._currentMacro || parser._currentMacro.length === 0) {
+			parser.raise(parser.start, '`@endmacro` outside of `@macro`')
+		}
 
-	const output = this.startNode()
-	output.rescopeContext = true
-	output.params = args
-	output.body = this.parseUntilEndDirective('endmacro')
+		parser._currentMacro.pop()
 
-	node.output = this.finishNode(output, 'StoneOutputBlock')
-	return this.finishNode(node, 'StoneMacro')
-}
-
-export function parseEnd(node) {
-	if(!this._currentMacro || this._currentMacro.length === 0) {
-		this.raise(this.start, '`@endmacro` outside of `@macro`')
+		return parser.finishNode(node, 'Directive')
 	}
 
-	this._currentMacro.pop()
+	static generate(generator, node, state) {
+		state.write('_[')
+		generator[node.id.type](node.id, state)
+		state.write('] = ')
+		return generator[node.output.type](node.output, state)
+	}
 
-	return this.finishNode(node, 'Directive')
-}
+	static walk(walker, node, st, c) {
+		c(node.id, st, 'Pattern')
+		c(node.output, st, 'Expression')
+	}
 
-export function generate(node, state) {
-	state.write('_[')
-	this[node.id.type](node.id, state)
-	state.write('] = ')
-	return this[node.output.type](node.output, state)
-}
+	static scope(scoper, { output }, scope) {
+		scoper._scope(output, scope)
+	}
 
-export function walk(node, st, c) {
-	c(node.id, st, 'Pattern')
-	c(node.output, st, 'Expression')
-}
-
-export function scope({ output }, scope) {
-	this._scope(output, scope)
 }

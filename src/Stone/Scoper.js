@@ -165,12 +165,6 @@ export class Scoper {
 
 }
 
-for(const key of Object.keys(Types)) {
-	const scope = Types[key].scope
-
-	if(typeof scope !== 'function') {
-		continue
-	}
-
-	Scoper[key] = scope.bind(Scoper)
+for(const type of Object.values(Types)) {
+	type.registerScope(Scoper)
 }

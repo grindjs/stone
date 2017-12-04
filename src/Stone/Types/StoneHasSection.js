@@ -1,51 +1,57 @@
+import './StoneDirectiveType'
+
 import { endDirectives } from '../Parsers/Conditionals'
 
 /**
  * Convenience directive to determine if a section has content
  */
-export const directive = 'hassection'
+export class StoneHasSection extends StoneDirectiveType {
 
-export function parse(node, args) {
-	args = this._flattenArgs(args)
+	static directive = 'hassection'
 
-	if(args.length !== 1) {
-		this.raise(this.start, '`@hassection` must contain exactly 1 argument')
+	static parse(parser, node, args) {
+		args = parser._flattenArgs(args)
+
+		if(args.length !== 1) {
+			parser.raise(parser.start, '`@hassection` must contain exactly 1 argument')
+		}
+
+		(parser._currentIf = (parser._currentIf || [ ])).push(node)
+
+		node.section = args.pop()
+		node.consequent = parser.parseUntilEndDirective(endDirectives)
+		return parser.finishNode(node, 'StoneHasSection')
 	}
 
-	(this._currentIf = (this._currentIf || [ ])).push(node)
-
-	node.section = args.pop()
-	node.consequent = this.parseUntilEndDirective(endDirectives)
-	return this.finishNode(node, 'StoneHasSection')
-}
-
-export function generate(node, state) {
-	node.test = {
-		type: 'CallExpression',
-		callee: {
-			type: 'MemberExpression',
-			object: {
-				type: 'Identifier',
-				name: '_sections'
+	static generate(generator, node, state) {
+		node.test = {
+			type: 'CallExpression',
+			callee: {
+				type: 'MemberExpression',
+				object: {
+					type: 'Identifier',
+					name: '_sections'
+				},
+				property: {
+					type: 'Identifier',
+					name: 'has'
+				}
 			},
-			property: {
-				type: 'Identifier',
-				name: 'has'
-			}
-		},
-		arguments: [ node.section ]
+			arguments: [ node.section ]
+		}
+
+		return generator.IfStatement(node, state)
 	}
 
-	return this.IfStatement(node, state)
-}
+	static walk(walker, node, st, c) {
+		c(node.section, st, 'Pattern')
+		c(node.consequence, st, 'Expression')
 
-export function walk(node, st, c) {
-	c(node.section, st, 'Pattern')
-	c(node.consequence, st, 'Expression')
+		if(node.alternate.isNil) {
+			return
+		}
 
-	if(node.alternate.isNil) {
-		return
+		c(node.alternate, st, 'Expression')
 	}
 
-	c(node.alternate, st, 'Expression')
 }

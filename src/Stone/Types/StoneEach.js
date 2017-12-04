@@ -1,40 +1,46 @@
-export const directive = 'each'
+import './StoneDirectiveType'
 
-/**
- * Compiles each directive to call the runtime and output
- * the result.
- *
- * @param  {object} node   Blank node
- * @param  {mixed}  params Arguments to pass through to runtime
- * @return {object}        Finished node
- */
-export function parse(node, params) {
-	node.params = this._flattenArgs(params)
+export class StoneEach extends StoneDirectiveType {
 
-	if(node.params.length < 3) {
-		this.raise(this.start, '`@each` must contain at least 3 arguments')
-	} else if(node.params.length > 5) {
-		this.raise(this.start, '`@each` cannot contain more than 5 arguments')
+	static directive = 'each'
+
+	/**
+	 * Compiles each directive to call the runtime and output
+	 * the result.
+	 *
+	 * @param  {object} node   Blank node
+	 * @param  {mixed}  params Arguments to pass through to runtime
+	 * @return {object}        Finished node
+	 */
+	static parse(parser, node, params) {
+		node.params = parser._flattenArgs(params)
+
+		if(node.params.length < 3) {
+			parser.raise(parser.start, '`@each` must contain at least 3 arguments')
+		} else if(node.params.length > 5) {
+			parser.raise(parser.start, '`@each` cannot contain more than 5 arguments')
+		}
+
+		parser.next()
+		return parser.finishNode(node, 'StoneEach')
 	}
 
-	this.next()
-	return this.finishNode(node, 'StoneEach')
-}
+	static generate(generator, node, state) {
+		node.params.unshift({
+			type: 'Identifier',
+			name: '_'
+		}, {
+			type: 'Identifier',
+			name: '_templatePathname'
+		})
 
-export function generate(node, state) {
-	node.params.unshift({
-		type: 'Identifier',
-		name: '_'
-	}, {
-		type: 'Identifier',
-		name: '_templatePathname'
-	})
+		state.write('output += _.$stone.each')
+		generator.SequenceExpression({ expressions: node.params }, state)
+		state.write(';')
+	}
 
-	state.write('output += _.$stone.each')
-	this.SequenceExpression({ expressions: node.params }, state)
-	state.write(';')
-}
+	static walk() {
+		// Do nothing
+	}
 
-export function walk() {
-	// Do nothing
 }

@@ -1,57 +1,63 @@
-export const directive = 'include'
+import './StoneDirectiveType'
 
-/**
- * Renders content from a subview
- *
- * @param  {object} node Blank node
- * @param  {mixed}  args View name and optional context
- * @return {object}      Finished node
- */
-export function parse(node, args) {
-	args = this._flattenArgs(args)
+export class StoneInclude extends StoneDirectiveType {
 
-	if(args.length === 0) {
-		this.raise(this.start, '`@include` must contain at least 1 argument')
+	static directive = 'include'
+
+	/**
+	 * Renders content from a subview
+	 *
+	 * @param  {object} node Blank node
+	 * @param  {mixed}  args View name and optional context
+	 * @return {object}      Finished node
+	 */
+	static parse(parser, node, args) {
+		args = parser._flattenArgs(args)
+
+		if(args.length === 0) {
+			parser.raise(parser.start, '`@include` must contain at least 1 argument')
+		}
+
+		node.view = args.shift()
+
+		if(args.length > 1) {
+			parser.raise(parser.start, '`@include` cannot contain more than 2 arguments')
+		} else if(args.length === 1) {
+			node.context = args.shift()
+		}
+
+		parser.next()
+		return parser.finishNode(node, 'StoneInclude')
 	}
 
-	node.view = args.shift()
+	static generate(generator, node, state) {
+		state.write('output += _.$stone.include(_, _sections, _templatePathname, ')
+		generator[node.view.type](node.view, state)
 
-	if(args.length > 1) {
-		this.raise(this.start, '`@include` cannot contain more than 2 arguments')
-	} else if(args.length === 1) {
-		node.context = args.shift()
+		if(!node.context.isNil) {
+			state.write(', ')
+			generator[node.context.type](node.context, state)
+		}
+
+		state.write(');')
 	}
 
-	this.next()
-	return this.finishNode(node, 'StoneInclude')
-}
+	static walk(walker, node, st, c) {
+		c(node.view, st, 'Pattern')
 
-export function generate(node, state) {
-	state.write('output += _.$stone.include(_, _sections, _templatePathname, ')
-	this[node.view.type](node.view, state)
+		if(node.context.isNil) {
+			return
+		}
 
-	if(!node.context.isNil) {
-		state.write(', ')
-		this[node.context.type](node.context, state)
+		c(node.context, st, 'Expression')
 	}
 
-	state.write(');')
-}
+	static scope(scoper, node, scope) {
+		if(node.context.isNil) {
+			return
+		}
 
-export function walk(node, st, c) {
-	c(node.view, st, 'Pattern')
-
-	if(node.context.isNil) {
-		return
+		scoper._scope(node.context, scope)
 	}
 
-	c(node.context, st, 'Expression')
-}
-
-export function scope(node, scope) {
-	if(node.context.isNil) {
-		return
-	}
-
-	this._scope(node.context, scope)
 }

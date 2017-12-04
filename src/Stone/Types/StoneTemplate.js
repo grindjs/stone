@@ -1,140 +1,146 @@
-export function generate({ pathname, output, isLayout, hasLayoutContext }, state) {
-	output.id = {
-		type: 'Identifier',
-		name: 'template'
-	}
+import './StoneType'
 
-	output.params = [
-		{
+export class StoneTemplate extends StoneType {
+
+	static generate(generator, { pathname, output, isLayout, hasLayoutContext }, state) {
+		output.id = {
 			type: 'Identifier',
-			name: '_'
-		}, {
-			type: 'AssignmentPattern',
-			left: {
+			name: 'template'
+		}
+
+		output.params = [
+			{
 				type: 'Identifier',
-				name: '_sections'
-			},
-			right: {
-				type: 'NewExpression',
-				callee: {
+				name: '_'
+			}, {
+				type: 'AssignmentPattern',
+				left: {
 					type: 'Identifier',
-					name: 'StoneSections'
+					name: '_sections'
+				},
+				right: {
+					type: 'NewExpression',
+					callee: {
+						type: 'Identifier',
+						name: 'StoneSections'
+					}
 				}
 			}
-		}
-	]
+		]
 
-	output.assignments = output.assignments || [ ]
-	output.assignments.push({
-		kind: 'const',
-		left: {
-			type: 'Identifier',
-			name: '_templatePathname'
-		},
-		right: {
-			type: 'Literal',
-			value: pathname.isNil ? null : pathname,
-			raw: pathname.isNil ? null : `'${pathname}'`
-		}
-	})
-
-	if(isLayout) {
+		output.assignments = output.assignments || [ ]
 		output.assignments.push({
-			kind: 'let',
+			kind: 'const',
 			left: {
 				type: 'Identifier',
-				name: '__extendsLayout'
+				name: '_templatePathname'
+			},
+			right: {
+				type: 'Literal',
+				value: pathname.isNil ? null : pathname,
+				raw: pathname.isNil ? null : `'${pathname}'`
 			}
 		})
 
-		const context =  {
-			type: 'ObjectExpression',
-			properties: [
-				{
-					type: 'SpreadElement',
-					argument: {
-						type: 'Identifier',
-						name: '_'
-					}
-				}
-			]
-		}
-
-		if(hasLayoutContext) {
-			const extendsContext = {
-				type: 'Identifier',
-				name: '__extendsContext'
-			}
-
+		if(isLayout) {
 			output.assignments.push({
 				kind: 'let',
-				left: extendsContext
+				left: {
+					type: 'Identifier',
+					name: '__extendsLayout'
+				}
 			})
 
-			context.properties.push({
-				type: 'SpreadElement',
-				argument: extendsContext
-			})
-		}
+			const context =  {
+				type: 'ObjectExpression',
+				properties: [
+					{
+						type: 'SpreadElement',
+						argument: {
+							type: 'Identifier',
+							name: '_'
+						}
+					}
+				]
+			}
 
-		output.return = {
-			type: 'CallExpression',
-			callee: {
-				type: 'MemberExpression',
-				object: {
+			if(hasLayoutContext) {
+				const extendsContext = {
+					type: 'Identifier',
+					name: '__extendsContext'
+				}
+
+				output.assignments.push({
+					kind: 'let',
+					left: extendsContext
+				})
+
+				context.properties.push({
+					type: 'SpreadElement',
+					argument: extendsContext
+				})
+			}
+
+			output.return = {
+				type: 'CallExpression',
+				callee: {
 					type: 'MemberExpression',
 					object: {
-						type: 'Identifier',
-						name: '_'
+						type: 'MemberExpression',
+						object: {
+							type: 'Identifier',
+							name: '_'
+						},
+						property: {
+							type: 'Identifier',
+							name: '$stone'
+						}
 					},
 					property: {
 						type: 'Identifier',
-						name: '$stone'
+						name: 'extends'
 					}
 				},
-				property: {
-					type: 'Identifier',
-					name: 'extends'
-				}
-			},
-			arguments: [
-				{
-					type: 'Identifier',
-					name: '_templatePathname'
-				}, {
-					type: 'Identifier',
-					name: '__extendsLayout'
-				},
-				context,
-				{
-					type: 'Identifier',
-					name: '_sections'
-				}
-			]
+				arguments: [
+					{
+						type: 'Identifier',
+						name: '_templatePathname'
+					}, {
+						type: 'Identifier',
+						name: '__extendsLayout'
+					},
+					context,
+					{
+						type: 'Identifier',
+						name: '_sections'
+					}
+				]
+			}
+		} else {
+			output.returnRaw = true
 		}
-	} else {
-		output.returnRaw = true
+
+		generator[output.type](output, state)
 	}
 
-	this[output.type](output, state)
-}
-
-export function walk({ output }, st, c) {
-	c(output, st, 'Expression')
-}
-
-export function scope({ output, isLayout, hasLayoutContext }, scope) {
-	scope.add('_')
-	scope.add('_sections')
-	scope.add('_templatePathname')
-
-	if(isLayout) {
-		scope.add('__extendsLayout')
-
-		if(hasLayoutContext) {
-			scope.add('__extendsContext')
-		}
+	static walk(walker, { output }, st, c) {
+		c(output, st, 'Expression')
 	}
 
-	this._scope(output, scope)
+	static scope(scoper, { output, isLayout, hasLayoutContext }, scope) {
+		scope.add('_')
+		scope.add('_sections')
+		scope.add('_templatePathname')
+
+		if(isLayout) {
+			scope.add('__extendsLayout')
+
+			if(hasLayoutContext) {
+				scope.add('__extendsContext')
+			}
+		}
+
+		scoper._scope(output, scope)
+	}
+
 }

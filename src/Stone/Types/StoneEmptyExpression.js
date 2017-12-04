@@ -1,7 +1,13 @@
-export function generate() {
-	// Do nothing
-}
+import './StoneType'
 
-export function walk() {
-	// Do nothing
+export class StoneEmptyExpression extends StoneType {
+
+	static generate() {
+		// Do nothing
+	}
+
+	static walk() {
+		// Do nothing
+	}
+
 }

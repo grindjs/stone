@@ -1,73 +1,78 @@
-export const directive = 'slot'
-export const hasEndDirective = true
+import './StoneDirectiveType'
 
-export function parse(node, args) {
-	args = this._flattenArgs(args)
+export class StoneSlot extends StoneDirectiveType {
 
-	if(args.length === 0) {
-		this.raise(this.start, '`@slot` must contain at least 1 argument')
+	static directive = 'slot'
+
+	static parse(parser, node, args) {
+		args = parser._flattenArgs(args)
+
+		if(args.length === 0) {
+			parser.raise(parser.start, '`@slot` must contain at least 1 argument')
+		}
+
+		node.id = args.shift()
+
+		if(args.length > 1) {
+			parser.raise(parser.start, '`@slot` cannot contain more than 2 arguments')
+		} else if(args.length === 1) {
+			node.output = args.pop()
+			node.inline = true
+			parser.next()
+		} else {
+			(parser._currentSlot = (parser._currentSlot || [ ])).push(node)
+
+			const output = parser.startNode()
+			output.params = args
+			output.body = parser.parseUntilEndDirective('endslot')
+			node.output = parser.finishNode(output, 'StoneOutputBlock')
+		}
+
+		return parser.finishNode(node, 'StoneSlot')
 	}
 
-	node.id = args.shift()
+	/**
+	 * Ends the current slot and returns output
+	 * @return {string} Output from the slot
+	 */
+	static parseEnd(parser, node) {
+		if(!parser._currentSlot || parser._currentSlot.length === 0) {
+			parser.raise(parser.start, '`@endslot` outside of `@slot`')
+		}
 
-	if(args.length > 1) {
-		this.raise(this.start, '`@slot` cannot contain more than 2 arguments')
-	} else if(args.length === 1) {
-		node.output = args.pop()
-		node.inline = true
-		this.next()
-	} else {
-		(this._currentSlot = (this._currentSlot || [ ])).push(node)
+		parser._currentSlot.pop()
 
-		const output = this.startNode()
-		output.params = args
-		output.body = this.parseUntilEndDirective('endslot')
-		node.output = this.finishNode(output, 'StoneOutputBlock')
+		return parser.finishNode(node, 'Directive')
 	}
 
-	return this.finishNode(node, 'StoneSlot')
-}
+	static generate(generator, node, state) {
+		state.write('__componentContext[')
+		generator[node.id.type](node.id, state)
+		state.write('] = ')
 
-/**
- * Ends the current slot and returns output
- * @return {string} Output from the slot
- */
-export function parseEnd(node) {
-	if(!this._currentSlot || this._currentSlot.length === 0) {
-		this.raise(this.start, '`@endslot` outside of `@slot`')
+		if(node.inline) {
+			generator.StoneOutputExpression({ safe: true, value: node.output }, state)
+		} else {
+			state.write('(')
+			generator[node.output.type](node.output, state)
+			state.write(')()')
+		}
+
+		state.write(';')
 	}
 
-	this._currentSlot.pop()
+	static walk(walker, node, st, c) {
+		c(node.id, st, 'Pattern')
 
-	return this.finishNode(node, 'Directive')
-}
+		if(node.inline) {
+			return
+		}
 
-export function generate(node, state) {
-	state.write('__componentContext[')
-	this[node.id.type](node.id, state)
-	state.write('] = ')
-
-	if(node.inline) {
-		this.StoneOutputExpression({ safe: true, value: node.output }, state)
-	} else {
-		state.write('(')
-		this[node.output.type](node.output, state)
-		state.write(')()')
+		c(node.output, st, 'Expression')
 	}
 
-	state.write(';')
-}
-
-export function walk(node, st, c) {
-	c(node.id, st, 'Pattern')
-
-	if(node.inline) {
-		return
+	static scope(scoper, node, scope) {
+		scoper._scope(node.output, scope)
 	}
 
-	c(node.output, st, 'Expression')
-}
-
-export function scope(node, scope) {
-	this._scope(node.output, scope)
 }

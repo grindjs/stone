@@ -1,99 +1,102 @@
-import { make } from '../Support/MakeNode'
+import './StoneDirectiveType'
 
-export const directive = 'component'
-export const hasEndDirective = true
+export class StoneComponent extends StoneDirectiveType {
 
-export function parse(node, args) {
-	args = this._flattenArgs(args)
+	static directive = 'component'
 
-	if(args.length === 0) {
-		this.raise(this.start, '`@component` must contain at least 1 argument')
+	static parse(parser, node, args) {
+		args = parser._flattenArgs(args)
+
+		if(args.length === 0) {
+			parser.raise(parser.start, '`@component` must contain at least 1 argument')
+		}
+
+		node.view = args.shift()
+
+		if(args.length > 1) {
+			parser.raise(parser.start, '`@component` cannot contain more than 2 arguments')
+		} else if(args.length === 1) {
+			node.context = args.pop()
+		}
+
+		(parser._currentComponent = (parser._currentComponent || [ ])).push(node)
+
+		const output = parser.startNode()
+		output.params = args
+		output.body = parser.parseUntilEndDirective('endcomponent')
+		node.output = parser.finishNode(output, 'StoneOutputBlock')
+
+		return parser.finishNode(node, 'StoneComponent')
 	}
 
-	node.view = args.shift()
+	/**
+	 * Ends the current component and returns output
+	 * @return {string} Output from the component
+	 */
+	static parseEnd(parser, node) {
+		if(!parser._currentComponent || parser._currentComponent.length === 0) {
+			parser.raise(parser.start, '`@endcomponent` outside of `@component`')
+		}
 
-	if(args.length > 1) {
-		this.raise(this.start, '`@component` cannot contain more than 2 arguments')
-	} else if(args.length === 1) {
-		node.context = args.pop()
+		parser._currentComponent.pop()
+
+		return parser.finishNode(node, 'Directive')
 	}
 
-	(this._currentComponent = (this._currentComponent || [ ])).push(node)
+	static generate(generator, node, state) {
+		node.output.assignments = node.output.assignments || [ ]
 
-	const output = this.startNode()
-	output.params = args
-	output.body = this.parseUntilEndDirective('endcomponent')
-	node.output = this.finishNode(output, 'StoneOutputBlock')
+		node.output.assignments.push({
+			kind: 'const',
+			left: this.make.identifier('__componentView'),
+			right: node.view
+		})
 
-	return this.finishNode(node, 'StoneComponent')
-}
+		node.output.assignments.push({
+			kind: 'const',
+			left: this.make.identifier('__componentContext'),
+			right: !node.context.isNil ? node.context : this.make.object()
+		})
 
-/**
- * Ends the current component and returns output
- * @return {string} Output from the component
- */
-export function parseEnd(node) {
-	if(!this._currentComponent || this._currentComponent.length === 0) {
-		this.raise(this.start, '`@endcomponent` outside of `@component`')
-	}
-
-	this._currentComponent.pop()
-
-	return this.finishNode(node, 'Directive')
-}
-
-export function generate(node, state) {
-	node.output.assignments = node.output.assignments || [ ]
-
-	node.output.assignments.push({
-		kind: 'const',
-		left: make.identifier('__componentView'),
-		right: node.view
-	})
-
-	node.output.assignments.push({
-		kind: 'const',
-		left: make.identifier('__componentContext'),
-		right: !node.context.isNil ? node.context : make.object()
-	})
-
-	node.output.return = {
-		type: 'CallExpression',
-		callee: {
-			type: 'MemberExpression',
-			object: {
+		node.output.return = {
+			type: 'CallExpression',
+			callee: {
 				type: 'MemberExpression',
-				object: make.identifier('_'),
-				property: make.identifier('$stone'),
+				object: {
+					type: 'MemberExpression',
+					object: this.make.identifier('_'),
+					property: this.make.identifier('$stone'),
+				},
+				property: this.make.identifier('include'),
 			},
-			property: make.identifier('include'),
-		},
-		arguments: [
-			make.identifier('_'),
-			make.null(),
-			make.identifier('_templatePathname'),
-			make.identifier('__componentView'),
-			make.object([
-				make.property('slot', make.new('HtmlString', 'output')),
-				make.spread('__componentContext')
-			])
-		]
+			arguments: [
+				this.make.identifier('_'),
+				this.make.null(),
+				this.make.identifier('_templatePathname'),
+				this.make.identifier('__componentView'),
+				this.make.object([
+					this.make.property('slot', this.make.new('HtmlString', 'output')),
+					this.make.spread('__componentContext')
+				])
+			]
+		}
+
+		state.write('output += (')
+		generator[node.output.type](node.output, state)
+		state.write(')();')
 	}
 
-	state.write('output += (')
-	this[node.output.type](node.output, state)
-	state.write(')();')
-}
+	static walk(walker, node, st, c) {
+		// TODO
+	}
 
-export function walk(node, st, c) {
-	// TODO
-}
+	static scope(scoper, node, scope) {
+		node.scope = scope.branch([
+			'__componentView',
+			'__componentContext'
+		])
 
-export function scope(node, scope) {
-	node.scope = scope.branch([
-		'__componentView',
-		'__componentContext'
-	])
+		scoper._scope(node.output, node.scope)
+	}
 
-	this._scope(node.output, node.scope)
 }

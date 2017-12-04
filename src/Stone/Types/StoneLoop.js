@@ -1,81 +1,87 @@
-export function generate({ loop }, state) {
-	// TODO: Future optimizations should check if
-	// the `loop` var is used before injecting
-	// support for it.
+import './StoneType'
 
-	state.__loops = (state.__loops || 0) + 1
-	const loopVariable = `__loop${state.__loops}`
-	loop.scope.add(loopVariable)
-	loop.body.scope.add('loop')
+export class StoneLoop extends StoneType {
 
-	state.write(`const ${loopVariable} = new _.StoneLoop(`)
+	static generate(generator, { loop }, state) {
+		// TODO: Future optimizations should check if
+		// the `loop` var is used before injecting
+		// support for it.
 
-	if(loop.type === 'ForInStatement') {
-		state.write('Object.keys(')
-	}
+		state.__loops = (state.__loops || 0) + 1
+		const loopVariable = `__loop${state.__loops}`
+		loop.scope.add(loopVariable)
+		loop.body.scope.add('loop')
 
-	this[loop.right.type](loop.right, state)
+		state.write(`const ${loopVariable} = new _.StoneLoop(`)
 
-	if(loop.type === 'ForInStatement') {
-		state.write(')')
-	}
+		if(loop.type === 'ForInStatement') {
+			state.write('Object.keys(')
+		}
 
-	state.write(');')
-	state.write(state.lineEnd)
-	state.write(state.indent)
+		generator[loop.right.type](loop.right, state)
 
-	state.write(`${loopVariable}.depth = ${state.__loops};`)
-	state.write(state.lineEnd)
-	state.write(state.indent)
+		if(loop.type === 'ForInStatement') {
+			state.write(')')
+		}
 
-	if(state.__loops > 1) {
-		state.write(`${loopVariable}.parent = __loop${state.__loops - 1};`)
+		state.write(');')
 		state.write(state.lineEnd)
 		state.write(state.indent)
-	}
 
-	const positions = {
-		start: loop.body.start,
-		end: loop.body.end
-	}
+		state.write(`${loopVariable}.depth = ${state.__loops};`)
+		state.write(state.lineEnd)
+		state.write(state.indent)
 
-	loop.body.body.unshift({
-		...positions,
-		type: 'VariableDeclaration',
-		declarations: [
-			{
-				...positions,
-				type: 'VariableDeclarator',
-				id: {
-					...positions,
-					type: 'Identifier',
-					name: 'loop'
-				},
-				init: {
-					...positions,
-					type: 'Identifier',
-					name: loopVariable
-				}
-			}
-		],
-		kind: 'const'
-	})
-
-	this.ForOfStatement({
-		...loop,
-		type: 'ForOfStatement',
-		right: {
-			...loop.right,
-			type: 'Identifier',
-			name: loopVariable
+		if(state.__loops > 1) {
+			state.write(`${loopVariable}.parent = __loop${state.__loops - 1};`)
+			state.write(state.lineEnd)
+			state.write(state.indent)
 		}
-	}, state)
-}
 
-export function walk({ loop }, st, c) {
-	c(loop, st, 'Expression')
-}
+		const positions = {
+			start: loop.body.start,
+			end: loop.body.end
+		}
 
-export function scope(node, scope) {
-	return this._scope(node.loop, scope)
+		loop.body.body.unshift({
+			...positions,
+			type: 'VariableDeclaration',
+			declarations: [
+				{
+					...positions,
+					type: 'VariableDeclarator',
+					id: {
+						...positions,
+						type: 'Identifier',
+						name: 'loop'
+					},
+					init: {
+						...positions,
+						type: 'Identifier',
+						name: loopVariable
+					}
+				}
+			],
+			kind: 'const'
+		})
+
+		generator.ForOfStatement({
+			...loop,
+			type: 'ForOfStatement',
+			right: {
+				...loop.right,
+				type: 'Identifier',
+				name: loopVariable
+			}
+		}, state)
+	}
+
+	static walk(walker, { loop }, st, c) {
+		c(loop, st, 'Expression')
+	}
+
+	static scope(scoper, node, scope) {
+		return scoper._scope(node.loop, scope)
+	}
+
 }
