@@ -105,6 +105,14 @@ export class Scoper {
 		return this._bodyStatement(node, null, scope)
 	}
 
+	static IfStatement(node, scope) {
+		this._scope(node.consequent, scope)
+
+		if(!node.alternate.isNil) {
+			this._scope(node.alternate, scope)
+		}
+	}
+
 	static AssignmentExpression(node, scope) {
 		this._scope(node.left, scope)
 	}
@@ -137,6 +145,14 @@ export class Scoper {
 
 	static Property(node, scope, force) {
 		this._scope(node.value, scope, force)
+	}
+
+	static SpreadElement(node, scope, force) {
+		this._scope(node.argument, scope, force)
+	}
+
+	static RestElement(node, scope, force) {
+		this.SpreadElement(node, scope, force)
 	}
 
 	static Identifier(node, scope, force) {
