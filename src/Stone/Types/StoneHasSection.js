@@ -1,3 +1,24 @@
+import { endDirectives } from '../Parsers/Conditionals'
+
+/**
+ * Convenience directive to determine if a section has content
+ */
+export const directive = 'hassection'
+
+export function parse(node, args) {
+	args = this._flattenArgs(args)
+
+	if(args.length !== 1) {
+		this.raise(this.start, '`@hassection` must contain exactly 1 argument')
+	}
+
+	(this._currentIf = (this._currentIf || [ ])).push(node)
+
+	node.section = args.pop()
+	node.consequent = this.parseUntilEndDirective(endDirectives)
+	return this.finishNode(node, 'StoneHasSection')
+}
+
 export function generate(node, state) {
 	node.test = {
 		type: 'CallExpression',

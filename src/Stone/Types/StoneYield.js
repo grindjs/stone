@@ -1,3 +1,31 @@
+export const directive = 'yield'
+
+/**
+ * Compiles the yield directive to output a section
+ *
+ * @param  {object} context Context for the compilation
+ * @param  {string} section Name of the section to yield
+ * @return {string}         Code to render the section
+ */
+export function parse(node, args) {
+	args = this._flattenArgs(args)
+
+	if(args.length === 0) {
+		this.raise(this.start, '`@yield` must contain at least 1 argument')
+	}
+
+	node.section = args.shift()
+
+	if(args.length > 1) {
+		this.raise(this.start, '`@yield` cannot contain more than 2 arguments')
+	} else if(args.length === 1) {
+		node.output = args.pop()
+	}
+
+	this.next()
+	return this.finishNode(node, 'StoneYield')
+}
+
 export function generate(node, state) {
 	state.write('output += _sections.render(')
 	this[node.section.type](node.section, state)

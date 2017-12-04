@@ -1,5 +1,47 @@
 import { make } from '../Support/MakeNode'
 
+export const directive = 'component'
+export const hasEndDirective = true
+
+export function parse(node, args) {
+	args = this._flattenArgs(args)
+
+	if(args.length === 0) {
+		this.raise(this.start, '`@component` must contain at least 1 argument')
+	}
+
+	node.view = args.shift()
+
+	if(args.length > 1) {
+		this.raise(this.start, '`@component` cannot contain more than 2 arguments')
+	} else if(args.length === 1) {
+		node.context = args.pop()
+	}
+
+	(this._currentComponent = (this._currentComponent || [ ])).push(node)
+
+	const output = this.startNode()
+	output.params = args
+	output.body = this.parseUntilEndDirective('endcomponent')
+	node.output = this.finishNode(output, 'StoneOutputBlock')
+
+	return this.finishNode(node, 'StoneComponent')
+}
+
+/**
+ * Ends the current component and returns output
+ * @return {string} Output from the component
+ */
+export function parseEnd(node) {
+	if(!this._currentComponent || this._currentComponent.length === 0) {
+		this.raise(this.start, '`@endcomponent` outside of `@component`')
+	}
+
+	this._currentComponent.pop()
+
+	return this.finishNode(node, 'Directive')
+}
+
 export function generate(node, state) {
 	node.output.assignments = node.output.assignments || [ ]
 
@@ -44,7 +86,7 @@ export function generate(node, state) {
 }
 
 export function walk(node, st, c) {
-
+	// TODO
 }
 
 export function scope(node, scope) {

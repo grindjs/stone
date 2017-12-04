@@ -4,19 +4,6 @@ import '../Tokens/StoneDirective'
 const { tokTypes: tt } = require('acorn')
 
 /**
- * Displays the contents of an object or value
- *
- * @param  {object} node  Blank node
- * @param  {mixed}  value Value to display
- * @return {object}       Finished node
- */
-export function parseDumpDirective(node, value) {
-	node.value = value
-	this.next()
-	return this.finishNode(node, 'StoneDump')
-}
-
-/**
  * Increases the spaceless level
  *
  * @param  {object} node  Blank node
