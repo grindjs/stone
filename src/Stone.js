@@ -78,14 +78,12 @@ export class Stone {
 			}
 		} else if(node.type === 'ObjectPattern') {
 			for(const property of node.properties) {
-				if(property.type === 'RestElement') {
-					callback(property.argument)
-				} else {
-					this.walkVariables(property.value, callback)
-				}
+				this.walkVariables(property.argument || property.value, callback)
 			}
 		} else if(node.type === 'AssignmentPattern') {
 			this.walkVariables(node.left, callback)
+		} else if(node.type === 'RestElement' || node.type === 'SpreadElement') {
+			callback(node.argument)
 		} else {
 			callback(node)
 		}
