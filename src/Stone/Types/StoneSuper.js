@@ -13,11 +13,13 @@ export class StoneSuper extends StoneYield {
 	 * @return {string} Code to render the super section
 	 */
 	static parse(parser, node) {
-		if(!parser._currentSection || parser._currentSection.length === 0) {
+		const stack = parser._sectionStack
+
+		if(!Array.isArray(stack) || stack.length === 0) {
 			parser.raise(parser.start, `\`@${node.directive}\` outside of \`@section\``)
 		}
 
-		node.section = { ...parser._currentSection[parser._currentSection.length - 1].id }
+		node.section = { ...stack[stack.length - 1].id }
 		return parser.finishNode(node, 'StoneSuper')
 	}
 

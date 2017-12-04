@@ -9,11 +9,13 @@ export class StoneShow extends StoneDirectiveType {
 	 * @return {string} Output from the section
 	 */
 	static parse(parser, node) {
-		if(!parser._currentSection || parser._currentSection.length === 0) {
+		const stack = parser._sectionStack
+
+		if(!Array.isArray(stack) || stack.length === 0) {
 			parser.raise(parser.start, '`@show` outside of `@section`')
 		}
 
-		parser._currentSection.pop().yield = true
+		stack.pop().yield = true
 
 		return parser.finishNode(node, 'Directive')
 	}

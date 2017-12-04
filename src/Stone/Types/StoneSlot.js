@@ -1,6 +1,6 @@
-import './StoneDirectiveType'
+import './StoneDirectiveBlockType'
 
-export class StoneSlot extends StoneDirectiveType {
+export class StoneSlot extends StoneDirectiveBlockType {
 
 	static directive = 'slot'
 
@@ -15,29 +15,13 @@ export class StoneSlot extends StoneDirectiveType {
 			node.inline = true
 			parser.next()
 		} else {
-			(parser._currentSlot = (parser._currentSlot || [ ])).push(node)
-
 			const output = parser.startNode()
 			output.params = args
-			output.body = parser.parseUntilEndDirective('endslot')
+			output.body = this.parseUntilEndDirective(parser, node)
 			node.output = parser.finishNode(output, 'StoneOutputBlock')
 		}
 
 		return parser.finishNode(node, 'StoneSlot')
-	}
-
-	/**
-	 * Ends the current slot and returns output
-	 * @return {string} Output from the slot
-	 */
-	static parseEnd(parser, node) {
-		if(!parser._currentSlot || parser._currentSlot.length === 0) {
-			parser.raise(parser.start, '`@endslot` outside of `@slot`')
-		}
-
-		parser._currentSlot.pop()
-
-		return parser.finishNode(node, 'Directive')
 	}
 
 	static generate(generator, node, state) {

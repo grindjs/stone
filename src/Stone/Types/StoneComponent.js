@@ -1,6 +1,6 @@
-import './StoneDirectiveType'
+import './StoneDirectiveBlockType'
 
-export class StoneComponent extends StoneDirectiveType {
+export class StoneComponent extends StoneDirectiveBlockType {
 
 	static directive = 'component'
 

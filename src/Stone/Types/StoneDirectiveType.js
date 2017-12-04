@@ -15,10 +15,6 @@ export class StoneDirectiveType extends StoneType {
 		if(typeof this.parseArgs === 'function') {
 			parser[`parse${directive}DirectiveArgs`] = this._bind('parseArgs')
 		}
-
-		if(typeof this.parseEnd === 'function') {
-			parser[`parseEnd${this.directive}Directive`] = this._bind('parseEnd')
-		}
 	}
 
 	static assertArgs(parser, args, minimum = 1, maximum = null) {

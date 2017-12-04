@@ -1,6 +1,6 @@
-import './StoneDirectiveType'
+import './StoneDirectiveBlockType'
 
-export class StoneMacro extends StoneDirectiveType {
+export class StoneMacro extends StoneDirectiveBlockType {
 
 	static directive = 'macro'
 
@@ -10,26 +10,13 @@ export class StoneMacro extends StoneDirectiveType {
 
 		node.id = args.shift()
 
-		parser._currentMacro = parser._currentMacro || [ ]
-		parser._currentMacro.push(node)
-
 		const output = parser.startNode()
 		output.rescopeContext = true
 		output.params = args
-		output.body = parser.parseUntilEndDirective('endmacro')
+		output.body = this.parseUntilEndDirective(parser, node)
 
 		node.output = parser.finishNode(output, 'StoneOutputBlock')
 		return parser.finishNode(node, 'StoneMacro')
-	}
-
-	static parseEnd(parser, node) {
-		if(!parser._currentMacro || parser._currentMacro.length === 0) {
-			parser.raise(parser.start, '`@endmacro` outside of `@macro`')
-		}
-
-		parser._currentMacro.pop()
-
-		return parser.finishNode(node, 'Directive')
 	}
 
 	static generate(generator, node, state) {
