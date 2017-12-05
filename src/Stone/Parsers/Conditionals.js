@@ -50,27 +50,3 @@ export function parseEndifDirective(node) {
 
 	return this.finishNode(node, 'Directive')
 }
-
-export function parseUnlessDirective(node, args) {
-	(this._currentUnless = (this._currentUneless || [ ])).push(node)
-
-	const unary = this.startNode()
-	unary.operator = '!'
-	unary.prefix = true
-	unary.argument = args
-	this.finishNode(unary, 'UnaryExpression')
-
-	node.test = unary
-	node.consequent = this.parseUntilEndDirective('endunless')
-	return this.finishNode(node, 'IfStatement')
-}
-
-export function parseEndunlessDirective(node) {
-	if(!this._currentUnless || this._currentUnless.length === 0) {
-		this.raise(this.start, '`@endunless` outside of `@unless`')
-	}
-
-	this._currentUnless.pop()
-
-	return this.finishNode(node, 'Directive')
-}
