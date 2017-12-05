@@ -1,25 +1,25 @@
 import './StoneDirectiveType'
-import { endDirectives } from '../Parsers/Conditionals'
+import './StoneIf'
 
 export class StoneElseif extends StoneDirectiveType {
 
 	static directive = 'elseif'
 
 	static parse(parser, node, condition) {
-		if(!parser._currentIf || parser._currentIf.length === 0) {
+		if(!parser._ifStack || parser._ifStack.length === 0) {
 			parser.raise(parser.start, '`@elseif` outside of `@if`')
 		}
 
-		const level = parser._currentIf.length - 1
+		const level = parser._ifStack.length - 1
 
-		if(parser._currentIf[level].alternate) {
+		if(parser._ifStack[level].alternate) {
 			parser.raise(parser.start, '`@elseif` after `@else`')
 		}
 
-		parser._currentIf[level].alternate = node
-		parser._currentIf[level] = node
+		parser._ifStack[level].alternate = node
+		parser._ifStack[level] = node
 		node.test = condition
-		node.consequent = parser.parseUntilEndDirective(endDirectives)
+		node.consequent = parser.parseUntilEndDirective(StoneIf.endDirectives)
 
 		return parser.finishNode(node, this.name)
 	}

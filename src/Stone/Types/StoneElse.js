@@ -1,23 +1,26 @@
 import './StoneDirectiveType'
-import { endDirectives } from '../Parsers/Conditionals'
+import './StoneIf'
 
 export class StoneElse extends StoneDirectiveType {
 
 	static directive = 'else'
 
 	static parse(parser, node) {
-		if(!parser._currentIf || parser._currentIf.length === 0) {
+		if(!parser._ifStack || parser._ifStack.length === 0) {
 			parser.raise(parser.start, '`@else` outside of `@if`')
 		}
 
-		const level = parser._currentIf.length - 1
+		const level = parser._ifStack.length - 1
 
-		if(parser._currentIf[level].alternate) {
+		if(parser._ifStack[level].alternate) {
 			parser.raise(parser.start, '`@else` after `@else`')
 		}
 
-		parser._currentIf[level].alternate = true
-		parser._currentIf[level].alternate = Object.assign(node, parser.parseUntilEndDirective(endDirectives))
+		parser._ifStack[level].alternate = true
+		parser._ifStack[level].alternate = Object.assign(
+			node,
+			parser.parseUntilEndDirective(StoneIf.endDirectives)
+		)
 
 		return parser.finishNode(node, this.name)
 	}

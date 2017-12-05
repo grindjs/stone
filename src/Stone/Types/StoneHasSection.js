@@ -1,6 +1,5 @@
 import './StoneDirectiveType'
-
-import { endDirectives } from '../Parsers/Conditionals'
+import './StoneIf'
 
 /**
  * Convenience directive to determine if a section has content
@@ -13,11 +12,11 @@ export class StoneHasSection extends StoneDirectiveType {
 		args = parser._flattenArgs(args)
 		this.assertArgs(parser, args, 1, 1)
 
-		parser._currentIf = parser._currentIf || [ ]
-		parser._currentIf.push(node)
+		parser._ifStack = parser._ifStack || [ ]
+		parser._ifStack.push(node)
 
 		node.section = args.pop()
-		node.consequent = parser.parseUntilEndDirective(endDirectives)
+		node.consequent = parser.parseUntilEndDirective(StoneIf.endDirectives)
 		return parser.finishNode(node, 'StoneHasSection')
 	}
 

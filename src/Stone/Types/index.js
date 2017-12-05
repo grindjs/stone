@@ -11,6 +11,7 @@ export const Types = {
 	...require('./StoneFor'),
 	...require('./StoneForeach'),
 	...require('./StoneHasSection'),
+	...require('./StoneIf'),
 	...require('./StoneInclude'),
 	...require('./StoneMacro'),
 	...require('./StoneOutput'),
