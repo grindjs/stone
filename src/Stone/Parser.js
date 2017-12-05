@@ -1,4 +1,3 @@
-import './Parsers'
 import './Types'
 
 import './Contexts/DirectiveArgs'
@@ -241,6 +240,16 @@ export class Parser {
 		return this.finishNode(node, 'BlockStatement')
 	}
 
+	skipStoneComment() {
+		const end = this.input.indexOf('--}}', this.pos += 4)
+
+		if(end === -1) {
+			this.raise(this.pos - 4, 'Unterminated comment')
+		}
+
+		this.pos = end + 4
+	}
+
 	_isCharCode(code, delta = 0) {
 		return this.input.charCodeAt(this.pos + delta) === code
 	}
@@ -284,11 +293,6 @@ export class Parser {
 		console.log(require('chalk').cyan(message), debug)
 	}
 
-}
-
-// Inject the parsers
-for(const [ name, func ] of Object.entries(Parsers)) {
-	Parser.prototype[name] = func
 }
 
 // Inject parsers for each type
