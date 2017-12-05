@@ -47,26 +47,3 @@ export function parseForeachDirective(node, args) {
 
 export const parseForeachDirectiveArgs = parseForDirectiveArgs
 export const parseEndforeachDirective = parseEndforDirective
-
-export function parseWhileDirectiveArgs(node) {
-	this.pos--
-	this.parseWhileStatement(node)
-
-	return null
-}
-
-export function parseWhileDirective(node) {
-	(this._currentWhile = (this._currentWhile || [ ])).push(node)
-	node.body = this.parseUntilEndDirective('endwhile')
-	return this.finishNode(node, node.type)
-}
-
-export function parseEndwhileDirective(node) {
-	if(!this._currentWhile || this._currentWhile.length === 0) {
-		this.raise(this.start, '`@endwhile` outside of `@while`')
-	}
-
-	this._currentWhile.pop()
-
-	return this.finishNode(node, 'Directive')
-}
