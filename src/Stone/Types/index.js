@@ -5,6 +5,7 @@ export const Types = {
 	...require('./StoneDump'),
 	...require('./StoneEach'),
 	...require('./StoneElse'),
+	...require('./StoneElseif'),
 	...require('./StoneEmptyExpression'),
 	...require('./StoneExtends'),
 	...require('./StoneFor'),
