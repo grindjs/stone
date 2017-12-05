@@ -18,19 +18,27 @@ export class StoneDirectiveBlockType extends StoneDirectiveType {
 		(parser[this.stackKey] = parser[this.stackKey] || [ ]).push(node)
 	}
 
+	static popStack(parser) {
+		parser[this.stackKey].pop()
+	}
+
+	static hasStack(parser) {
+		const stack = parser[this.stackKey]
+
+		return Array.isArray(stack) && stack.length > 0
+	}
+
 	static parseUntilEndDirective(parser, node, directive = null) {
 		this.pushStack(parser, node)
 		return parser.parseUntilEndDirective(directive || this.endDirective)
 	}
 
 	static parseEnd(parser, node) {
-		const stack = parser[this.stackKey]
-
-		if(!Array.isArray(stack) || stack.length === 0) {
+		if(!this.hasStack(parser, node)) {
 			parser.raise(parser.start, `\`@${node.directive}\` outside of \`@${this.startDirective}\``)
 		}
 
-		stack.pop()
+		this.popStack(parser, node)
 
 		return parser.finishNode(node, 'Directive')
 	}
