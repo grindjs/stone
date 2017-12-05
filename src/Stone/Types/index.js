@@ -4,6 +4,7 @@ export const Types = {
 	...require('./StoneContinue'),
 	...require('./StoneDump'),
 	...require('./StoneEach'),
+	...require('./StoneElse'),
 	...require('./StoneEmptyExpression'),
 	...require('./StoneExtends'),
 	...require('./StoneFor'),
@@ -21,8 +22,8 @@ export const Types = {
 	...require('./StoneSlot'),
 	...require('./StoneSuper'),
 	...require('./StoneTemplate'),
-	...require('./StoneUnset'),
 	...require('./StoneUnless'),
+	...require('./StoneUnset'),
 	...require('./StoneWhile'),
 	...require('./StoneYield'),
 }

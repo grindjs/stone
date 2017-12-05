@@ -25,22 +25,6 @@ export function parseElseifDirective(node, args) {
 	return this.finishNode(node, 'IfStatement')
 }
 
-export function parseElseDirective(node) {
-	if(!this._currentIf || this._currentIf.length === 0) {
-		this.raise(this.start, '`@else` outside of `@if`')
-	}
-
-	const level = this._currentIf.length - 1
-
-	if(this._currentIf[level].alternate) {
-		this.raise(this.start, '`@else` after `@else`')
-	}
-
-	this._currentIf[level].alternate = true
-	this._currentIf[level].alternate = this.parseUntilEndDirective(endDirectives)
-	return this.finishNode(node, 'BlockStatement')
-}
-
 export function parseEndifDirective(node) {
 	if(!this._currentIf || this._currentIf.length === 0) {
 		this.raise(this.start, '`@endif` outside of `@if`')
