@@ -1,6 +1,7 @@
 export const Types = {
 	...require('./StoneBreak'),
 	...require('./StoneComponent'),
+	...require('./StoneContinue'),
 	...require('./StoneDump'),
 	...require('./StoneEach'),
 	...require('./StoneEmptyExpression'),

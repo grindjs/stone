@@ -48,34 +48,6 @@ export function parseForeachDirective(node, args) {
 export const parseForeachDirectiveArgs = parseForDirectiveArgs
 export const parseEndforeachDirective = parseEndforDirective
 
-/**
- * Generate continue node that optionally has a condition
- * associated with it.
- *
- * @param  {object} node      Blank node
- * @param  {mixed}  condition Optional condition to continue on
- * @return {object}           Finished node
- */
-export function parseContinueDirective(node, condition) {
-	if(
-		(!this._currentWhile || this._currentWhile.length === 0)
-		&& (!this._currentFor || this._currentFor.length === 0)
-	) {
-		this.raise(this.start, '`@continue` outside of `@for` or `@while`')
-	}
-
-	if(condition.isNil) {
-		return this.finishNode(node, 'ContinueStatement')
-	}
-
-	const block = this.startNode()
-	block.body = [ this.finishNode(this.startNode(), 'ContinueStatement') ]
-
-	node.test = condition
-	node.consequent = this.finishNode(block, 'ContinueStatement')
-	return this.finishNode(node, 'IfStatement')
-}
-
 export function parseWhileDirectiveArgs(node) {
 	this.pos--
 	this.parseWhileStatement(node)

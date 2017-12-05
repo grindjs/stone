@@ -94,12 +94,15 @@ export class MakeNode {
 		return this.parser.finishNode(this.parser.startNode(), 'BreakStatement')
 	}
 
+	continue() {
+		return this.parser.finishNode(this.parser.startNode(), 'ContinueStatement')
+	}
+
 	block(statements) {
 		const node = this.parser.startNode()
 		node.body = statements
 		return this.parser.finishNode(node, 'BlockStatement')
 	}
-
 
 	null() {
 		const node = this.parser.startNode()
