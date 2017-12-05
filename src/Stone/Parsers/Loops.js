@@ -76,34 +76,6 @@ export function parseContinueDirective(node, condition) {
 	return this.finishNode(node, 'IfStatement')
 }
 
-/**
- * Generate break node that optionally has a condition
- * associated with it.
- *
- * @param  {object} node      Blank node
- * @param  {mixed}  condition Optional condition to break on
- * @return {object}           Finished node
- */
-export function parseBreakDirective(node, condition) {
-	if(
-		(!this._currentWhile || this._currentWhile.length === 0)
-		&& (!this._currentFor || this._currentFor.length === 0)
-	) {
-		this.raise(this.start, '`@break` outside of `@for` or `@while`')
-	}
-
-	if(condition.isNil) {
-		return this.finishNode(node, 'BreakStatement')
-	}
-
-	const block = this.startNode()
-	block.body = [ this.finishNode(this.startNode(), 'BreakStatement') ]
-
-	node.test = condition
-	node.consequent = this.finishNode(block, 'BlockStatement')
-	return this.finishNode(node, 'IfStatement')
-}
-
 export function parseWhileDirectiveArgs(node) {
 	this.pos--
 	this.parseWhileStatement(node)

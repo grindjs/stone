@@ -90,6 +90,10 @@ export class MakeNode {
 		return this.parser.finishNode(node, 'ReturnStatement')
 	}
 
+	break() {
+		return this.parser.finishNode(this.parser.startNode(), 'BreakStatement')
+	}
+
 	block(statements) {
 		const node = this.parser.startNode()
 		node.body = statements

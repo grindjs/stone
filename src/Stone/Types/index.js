@@ -1,4 +1,5 @@
 export const Types = {
+	...require('./StoneBreak'),
 	...require('./StoneComponent'),
 	...require('./StoneDump'),
 	...require('./StoneEach'),
