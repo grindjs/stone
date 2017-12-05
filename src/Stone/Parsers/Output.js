@@ -4,34 +4,6 @@ import '../Tokens/StoneDirective'
 const { tokTypes: tt } = require('acorn')
 
 /**
- * Increases the spaceless level
- *
- * @param  {object} node  Blank node
- * @return {object}       Finished node
- */
-export function parseSpacelessDirective(node) {
-	this._spaceless = (this._spaceless || 0) + 1
-	Object.assign(node, this.parseUntilEndDirective('endspaceless'))
-	return this.finishNode(node, 'BlockStatement')
-}
-
-/**
- * Decreases the spaceless level
- *
- * @param  {object} node  Blank node
- * @return {object}       Finished node
- */
-export function parseEndspacelessDirective(node) {
-	if(!this._spaceless || this._spaceless === 0) {
-		this.raise(this.start, '`@endspaceless` outside of `@spaceless`')
-	}
-
-	this._spaceless--
-
-	return this.finishNode(node, 'Directive')
-}
-
-/**
  * Parses output in Stone files
  *
  * @return {object} Finished node

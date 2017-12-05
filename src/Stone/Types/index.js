@@ -22,6 +22,7 @@ export const Types = {
 	...require('./StoneSet'),
 	...require('./StoneShow'),
 	...require('./StoneSlot'),
+	...require('./StoneSpaceless'),
 	...require('./StoneSuper'),
 	...require('./StoneTemplate'),
 	...require('./StoneUnless'),
