@@ -22,6 +22,13 @@ export class StoneOutput extends StoneType {
 		node.output = this.read(parser)
 		parser.inOutput = false
 
+		if(this.isEmpty(node)) {
+			// Only add the output if the string isn’t
+			// blank to avoid unnecessary whitespace before
+			// a directive
+			return parser.finishNode(node, 'StoneEmptyExpression')
+		}
+
 		return parser.finishNode(node, 'StoneOutput')
 	}
 
@@ -30,9 +37,14 @@ export class StoneOutput extends StoneType {
 	 *
 	 * @return {object} Template element node
 	 */
-	static parseOutputElement(parser) {
+	static parseOutputElement(parser, first = false) {
 		const elem = parser.startNode()
-		let output = parser.value
+		let output = parser.value || ''
+
+		if(first && output[0] === '\n') {
+			// Ignore the first newline after a directive
+			output = output.substring(1)
+		}
 
 		// Strip space between tags if spaceless
 		if(parser._spaceless > 0) {
@@ -66,7 +78,7 @@ export class StoneOutput extends StoneType {
 		node.expressions = [ ]
 		parser.next()
 
-		let curElt = this.parseOutputElement(parser)
+		let curElt = this.parseOutputElement(parser, true)
 		node.quasis = [ curElt ]
 
 		while(!curElt.tail) {
@@ -99,7 +111,7 @@ export class StoneOutput extends StoneType {
 
 			parser.next()
 
-			node.quasis.push(curElt = this.parseOutputElement(parser))
+			node.quasis.push(curElt = this.parseOutputElement(parser, false))
 		}
 
 		parser.next()
@@ -184,6 +196,13 @@ export class StoneOutput extends StoneType {
 
 	static scope(scoper, { output }, scope) {
 		return scoper._scope(output, scope)
+	}
+
+	static isEmpty(node) {
+		return node.output.type === 'TemplateLiteral'
+			&& node.output.expressions.length === 0
+			&& node.output.quasis.length === 1
+			&& node.output.quasis[0].value.cooked.trim().length === 0
 	}
 
 }

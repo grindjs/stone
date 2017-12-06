@@ -37,7 +37,7 @@ export class Stone {
 	static parse(code, pathname = null) {
 		this._register()
 
-		return acorn.parse(code, {
+		return acorn.parse(code.replace(/\s*$/g, ''), {
 			ecmaVersion: 9,
 			plugins: {
 				objectSpread: true,

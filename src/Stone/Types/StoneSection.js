@@ -18,6 +18,7 @@ export class StoneSection extends StoneDirectiveBlockType {
 			const output = parser.startNode()
 			output.params = args
 			output.body = this.parseUntilEndDirective(parser, node, [ 'show', 'endsection' ])
+			output.returnRaw = true
 			node.output = parser.finishNode(output, 'StoneOutputBlock')
 		}
 
