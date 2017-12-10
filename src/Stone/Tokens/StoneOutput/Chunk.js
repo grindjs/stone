@@ -1,4 +1,5 @@
 import '../TokenType'
+import '../StoneOutput'
 
 export class Chunk extends TokenType {
 
@@ -7,7 +8,7 @@ export class Chunk extends TokenType {
 
 		this.context.isExpr = true
 		this.context.preserveSpace = true
-		this.context.override = p => p.readOutputToken()
+		this.context.override = p => StoneOutput.readOutputToken(p)
 	}
 
 	update(parser) {

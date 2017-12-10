@@ -8,7 +8,6 @@ export class StoneOutput extends StoneType {
 
 	static registerParse(parser) {
 		parser.parseStoneOutput = this._bind('parse')
-		parser.readOutputToken = this._bind('readOutputToken')
 	}
 
 	static parse(parser) {
@@ -116,72 +115,6 @@ export class StoneOutput extends StoneType {
 
 		parser.next()
 		return parser.finishNode(node, 'TemplateLiteral')
-	}
-
-	/**
-	 * Controls the output flow
-	 */
-	static readOutputToken(parser) {
-		let chunkStart = parser.pos
-		let out = ''
-
-		const pushChunk = () => {
-			out += parser.input.slice(chunkStart, parser.pos)
-			chunkStart = parser.pos
-		}
-
-		const finishChunk = () => {
-			pushChunk()
-			return parser.finishToken(StoneOutputToken.output, out)
-		}
-
-		for(;;) {
-			if(parser.pos >= parser.input.length) {
-				if(parser.pos === parser.start) {
-					return parser.finishToken(tt.eof)
-				}
-
-				return finishChunk()
-			}
-
-			const ch = parser.input.charCodeAt(parser.pos)
-
-			if(ch === 64 && parser._isCharCode(123, 1)) {
-				if(parser._isCharCode(123, 2)) {
-					pushChunk()
-					chunkStart = parser.pos + 1
-				}
-
-				parser.pos++
-			} else if(
-				ch === 64
-				|| (ch === 123 && parser._isCharCode(123, 1) && !parser._isCharCode(64, -1))
-				|| (ch === 123 && parser._isCharCode(33, 1) && parser._isCharCode(33, 2))
-			) {
-				if(ch === 123 && parser._isCharCode(45, 2) && parser._isCharCode(45, 3)) {
-					pushChunk()
-					parser.skipStoneComment()
-					chunkStart = parser.pos
-					continue
-				} else if(parser.pos === parser.start && parser.type === StoneOutputToken.output) {
-					if(ch === 123) {
-						if(parser._isCharCode(33, 1)) {
-							parser.pos += 3
-							return parser.finishToken(StoneOutputToken.openUnsafe)
-						} else {
-							parser.pos += 2
-							return parser.finishToken(StoneOutputToken.openSafe)
-						}
-					}
-
-					return parser.finishToken(StoneDirectiveToken.type)
-				}
-
-				return finishChunk()
-			} else {
-				++parser.pos
-			}
-		}
 	}
 
 	static generate(generator, { output }, state) {
