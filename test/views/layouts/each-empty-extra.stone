@@ -1,0 +1,3 @@
+@each(null, [ ], 'value', 'layouts._each-empty-partial', {
+	placeholder: 'This is an alternative placeholder.'
+})

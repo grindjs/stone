@@ -1,3 +1,0 @@
-@each(null, [ ], 'value', 'control-structures._each-empty-partial', {
-	placeholder: 'This is an alternative placeholder.'
-})

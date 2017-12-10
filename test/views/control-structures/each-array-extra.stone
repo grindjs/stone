@@ -1,3 +1,0 @@
-@each('control-structures._each-array-partial', numbers, 'value', null, {
-	label: 'Value:'
-})

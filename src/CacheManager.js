@@ -1,5 +1,5 @@
 import { FS } from 'grind-support'
-import './AST'
+// import './AST'
 
 const path = require('path')
 
